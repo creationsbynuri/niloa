@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Niloa Team Workspace</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1A1613;
+    --lucent-white: #F6F8FE;
+    --toast: #C7A07B;
+    --butter-cream: #E9DBC3;
+    --delicate-blue: #C0DFED;
+    --toast-deep: #9c7d5f;
+    --line: rgba(26,22,19,0.10);
+    --shadow: 0 1px 2px rgba(26,22,19,0.04), 0 8px 24px rgba(26,22,19,0.06);
+    --red: #b23c3c;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; font-family: 'Inter', -apple-system, sans-serif;
+    background: linear-gradient(180deg, var(--butter-cream) 0%, var(--lucent-white) 340px);
+    color: var(--ink); min-height: 100vh;
+  }
+  .wrap { max-width: 1220px; margin: 0 auto; padding: 40px 28px 80px; }
+  header.top { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 28px; flex-wrap: wrap; gap: 16px; }
+  .brand { font-family: 'Playfair Display', serif; font-weight: 600; font-style: italic; font-size: 34px; letter-spacing: -0.5px; }
+  .brand span { color: var(--toast-deep); font-style: normal; }
+  .subtitle { font-size: 13.5px; color: rgba(26,22,19,0.55); margin-top: 4px; font-weight: 500; }
+  .top-right { display: flex; align-items: center; gap: 10px; }
+  .sync-pill { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; color: rgba(26,22,19,0.5); background: rgba(255,255,255,0.6); border: 1px solid var(--line); padding: 7px 13px; border-radius: 100px; }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #7fb896; flex-shrink: 0; }
+  .sync-dot.saving { background: var(--toast); animation: pulse 1s infinite; }
+  .sync-dot.error { background: var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .who-pill { font-size: 12.5px; color: rgba(26,22,19,0.6); background: rgba(255,255,255,0.6); border: 1px solid var(--line); padding: 7px 13px; border-radius: 100px; cursor: pointer; }
+  .who-pill:hover { background: #fff; }
+
+  nav.tabs { display: flex; gap: 4px; background: rgba(255,255,255,0.55); border: 1px solid var(--line); border-radius: 14px; padding: 5px; margin-bottom: 22px; flex-wrap: wrap; }
+  nav.tabs button { font-family: inherit; font-size: 14px; font-weight: 600; padding: 10px 18px; border: none; background: transparent; color: rgba(26,22,19,0.55); border-radius: 10px; cursor: pointer; }
+  nav.tabs button:hover { color: var(--ink); }
+  nav.tabs button.active { background: var(--ink); color: var(--lucent-white); }
+
+  .panel { display: none; } .panel.active { display: block; animation: fade 0.2s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px);} to {opacity:1; transform: translateY(0);} }
+
+  .card { background: rgba(255,255,255,0.72); backdrop-filter: blur(6px); border: 1px solid var(--line); border-radius: 18px; padding: 24px; box-shadow: var(--shadow); margin-bottom: 22px; }
+  .card h2 { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 20px; margin: 0 0 4px; }
+  .card .hint { font-size: 13px; color: rgba(26,22,19,0.5); margin: 0 0 18px; }
+
+  .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 12px; }
+  .form-grid.wide-first { grid-template-columns: 2fr repeat(auto-fit, minmax(130px, 1fr)); }
+  label.field { display: flex; flex-direction: column; gap: 5px; font-size: 12px; font-weight: 600; color: rgba(26,22,19,0.55); }
+  input, select, textarea { font-family: 'Inter', sans-serif; font-size: 14px; padding: 9px 11px; border: 1px solid rgba(26,22,19,0.14); border-radius: 9px; background: #fff; color: var(--ink); outline: none; width: 100%; }
+  input:focus, select:focus, textarea:focus { border-color: var(--toast); }
+  textarea { resize: vertical; min-height: 40px; font-family: inherit; }
+
+  .btn { font-family: 'Inter', sans-serif; font-weight: 600; font-size: 13.5px; padding: 10px 20px; border-radius: 9px; border: none; cursor: pointer; background: var(--ink); color: var(--lucent-white); }
+  .btn:hover { opacity: 0.85; }
+  .btn.ghost { background: transparent; color: var(--ink); border: 1px solid rgba(26,22,19,0.18); }
+  .btn.small { padding: 6px 12px; font-size: 12.5px; border-radius: 7px; }
+  .btn.danger { background: var(--red); color: #fff; }
+
+  .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+  .filter-bar input[type=text] { max-width: 220px; }
+  .filter-bar select { max-width: 170px; width: auto; }
+  .filter-bar .spacer { flex: 1; }
+  .filter-count { font-size: 12.5px; color: rgba(26,22,19,0.45); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  thead th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.6px; color: rgba(26,22,19,0.45); font-weight: 700; padding: 0 10px 10px; border-bottom: 1px solid var(--line); }
+  tbody td { padding: 12px 10px; border-bottom: 1px solid rgba(26,22,19,0.06); vertical-align: top; }
+  tbody tr.item-row { cursor: pointer; }
+  tbody tr.item-row:hover { background: rgba(192,223,237,0.12); }
+  tbody tr.item-row.overdue { box-shadow: inset 3px 0 0 var(--red); }
+  tbody tr.detail-row td { background: rgba(233,219,195,0.18); border-bottom: 1px solid var(--line); }
+  tbody tr.detail-row { display: none; }
+  tbody tr.detail-row.open { display: table-row; }
+
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 100px; font-size: 11.5px; font-weight: 700; }
+  .badge.offen { background: rgba(199,160,123,0.22); color: #8a6a4a; }
+  .badge.arbeit { background: rgba(192,223,237,0.45); color: #3a6b80; }
+  .badge.fertig { background: rgba(127,184,150,0.22); color: #3d7554; }
+  .badge.prio-hoch { background: rgba(200,80,80,0.14); color: var(--red); }
+  .badge.prio-mittel { background: rgba(199,160,123,0.18); color: #8a6a4a; }
+  .badge.prio-niedrig { background: rgba(26,22,19,0.06); color: rgba(26,22,19,0.5); }
+  .badge.overdue-flag { background: rgba(200,80,80,0.14); color: var(--red); }
+  .cat-tag { font-size: 11px; font-weight: 600; padding: 2px 9px; border-radius: 6px; background: var(--butter-cream); color: #7a5f3f; white-space: nowrap; }
+  .delete-x { cursor: pointer; color: rgba(26,22,19,0.3); font-size: 16px; padding: 4px 8px; border-radius: 6px; }
+  .delete-x:hover { color: var(--red); background: rgba(200,80,80,0.08); }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: rgba(26,22,19,0.4); font-size: 14px; }
+  .empty-state .big { font-family: 'Playfair Display', serif; font-style: italic; font-size: 19px; color: rgba(26,22,19,0.6); margin-bottom: 4px; }
+
+  .note-cell { max-width: 220px; color: rgba(26,22,19,0.7); }
+  .meta-line { font-size: 11.5px; color: rgba(26,22,19,0.4); margin-top: 2px; }
+
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media (max-width: 800px) { .detail-grid { grid-template-columns: 1fr; } }
+  .detail-section h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(26,22,19,0.5); margin: 0 0 10px; }
+  .log-list { display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; margin-bottom: 10px; padding-right: 4px; }
+  .log-item { font-size: 12.5px; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; }
+  .log-item .log-meta { color: rgba(26,22,19,0.4); font-size: 11px; margin-top: 3px; }
+  .comment-row { display: flex; gap: 8px; }
+  .comment-row textarea { min-height: 38px; }
+  .link-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; color: #3a6b80; text-decoration: none; word-break: break-all; }
+
+  .archive-toggle { font-size: 12.5px; color: var(--toast-deep); cursor: pointer; background: none; border: none; font-weight: 600; padding: 4px 0; }
+
+  .view-toggle { display: flex; gap: 4px; background: rgba(255,255,255,0.6); border: 1px solid var(--line); border-radius: 9px; padding: 3px; }
+  .view-toggle button { font-family: inherit; font-size: 12.5px; font-weight: 600; padding: 6px 12px; border: none; background: transparent; color: rgba(26,22,19,0.5); border-radius: 6px; cursor: pointer; }
+  .view-toggle button.active { background: var(--ink); color: var(--lucent-white); }
+
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .cal-header .cal-title { font-family: 'Playfair Display', serif; font-weight: 600; font-size: 17px; }
+  .cal-nav-btn { background: rgba(255,255,255,0.7); border: 1px solid var(--line); border-radius: 8px; width: 30px; height: 30px; cursor: pointer; font-size: 15px; }
+  .cal-nav-btn:hover { background: #fff; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+  .cal-daylabel { text-align: center; font-size: 10.5px; font-weight: 700; text-transform: uppercase; color: rgba(26,22,19,0.4); padding-bottom: 4px; }
+  .cal-cell { min-height: 78px; background: rgba(255,255,255,0.55); border: 1px solid var(--line); border-radius: 10px; padding: 6px; display: flex; flex-direction: column; gap: 3px; }
+  .cal-cell.outside { background: transparent; border-color: transparent; }
+  .cal-cell.today { border-color: var(--toast); box-shadow: 0 0 0 1px var(--toast) inset; }
+  .cal-daynum { font-size: 11px; font-weight: 700; color: rgba(26,22,19,0.45); }
+  .cal-chip { font-size: 10.5px; font-weight: 600; padding: 2px 6px; border-radius: 6px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cal-chip.offen { background: rgba(199,160,123,0.28); color: #8a6a4a; }
+  .cal-chip.arbeit { background: rgba(192,223,237,0.55); color: #3a6b80; }
+  .cal-chip.fertig { background: rgba(127,184,150,0.28); color: #3d7554; }
+  .cal-detail-wrap { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+
+  .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 18px; }
+  .stat-block h4 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.4px; color: rgba(26,22,19,0.5); margin: 0 0 10px; }
+  .stat-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 7px; font-size: 12.5px; }
+  .stat-bar-label { width: 90px; flex-shrink: 0; color: rgba(26,22,19,0.6); }
+  .stat-bar-track { flex: 1; height: 8px; background: rgba(26,22,19,0.06); border-radius: 5px; overflow: hidden; }
+  .stat-bar-fill { height: 100%; background: var(--toast); border-radius: 5px; }
+  .stat-bar-num { width: 24px; text-align: right; font-weight: 700; color: rgba(26,22,19,0.6); }
+  .stat-total { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 600; }
+
+  .name-banner { background: rgba(255,255,255,0.85); border: 1px solid var(--toast); border-radius: 14px; padding: 16px 20px; margin-bottom: 22px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .name-banner input { max-width: 220px; }
+
+  .login-overlay { position: fixed; inset: 0; background: linear-gradient(180deg, var(--butter-cream) 0%, var(--lucent-white) 60%); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+  .login-overlay.hidden { display: none; }
+  .login-box { background: rgba(255,255,255,0.85); border: 1px solid var(--line); border-radius: 20px; padding: 32px; max-width: 420px; width: 100%; box-shadow: var(--shadow); }
+  .team-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 6px; max-height: 240px; overflow-y: auto; }
+  .team-member-btn { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 11px 14px; border: 1px solid rgba(26,22,19,0.14); border-radius: 10px; background: #fff; cursor: pointer; font-weight: 600; font-size: 14px; }
+  .team-member-btn:hover { border-color: var(--toast); }
+  .team-member-btn .lock { font-size: 12px; color: rgba(26,22,19,0.35); }
+  .team-member-remove { font-size: 13px; color: rgba(26,22,19,0.3); padding: 2px 6px; border-radius: 5px; }
+  .team-member-remove:hover { color: var(--red); background: rgba(200,80,80,0.08); }
+  .login-divider { text-align: center; font-size: 12px; color: rgba(26,22,19,0.4); margin: 16px 0 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .login-error { color: var(--red); font-size: 13px; margin-top: 10px; min-height: 18px; }
+  .pin-inline { display: flex; gap: 6px; margin-top: 8px; }
+  .pin-inline input { max-width: 90px; }
+
+  .dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 22px; }
+  .dash-stat { background: rgba(255,255,255,0.72); border: 1px solid var(--line); border-radius: 16px; padding: 18px 20px; }
+  .dash-stat .num { font-family: 'Playfair Display', serif; font-size: 30px; font-weight: 600; }
+  .dash-stat .lbl { font-size: 12px; color: rgba(26,22,19,0.5); font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; margin-top: 2px; }
+  .dash-list-item { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid rgba(26,22,19,0.06); font-size: 13.5px; }
+  .dash-list-item:last-child { border-bottom: none; }
+
+  ::placeholder { color: rgba(26,22,19,0.32); }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 24px 14px 60px; }
+    table, thead, tbody, tr, td { display: block; }
+    thead { display: none; }
+    tbody tr.item-row { border: 1px solid var(--line); border-radius: 12px; margin-bottom: 4px; padding: 10px; background: rgba(255,255,255,0.5); }
+    tbody tr.detail-row.open { border: 1px solid var(--line); border-top: none; border-radius: 0 0 12px 12px; margin-bottom: 12px; }
+    tbody td { border-bottom: none; padding: 6px 4px; }
+    tbody td:before { content: attr(data-label); display: block; font-size: 10px; text-transform: uppercase; color: rgba(26,22,19,0.4); font-weight: 700; margin-bottom: 2px; }
+  }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div>
+      <div class="brand">niloa <span>workspace</span></div>
+      <div class="subtitle">Team-Koordination — Aufgaben, Content, Newsletter &amp; Support</div>
+    </div>
+    <div class="top-right">
+      <span class="who-pill" id="whoPill" onclick="showLoginGate()">👤 —</span>
+      <div class="sync-pill"><span class="sync-dot" id="syncDot"></span><span id="syncText">Synchron</span></div>
+    </div>
+  </header>
+
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-box">
+      <div class="brand" style="margin-bottom:4px;">niloa <span>workspace</span></div>
+      <p class="hint" style="margin-bottom:22px;">Wer bist du? PINs sind nur ein einfacher Schutz gegen Verwechslung, keine echte Kontosicherheit.</p>
+      <div id="teamList" class="team-list"></div>
+      <div class="login-divider">oder neu hinzufügen</div>
+      <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+        <label class="field">Name<input type="text" id="newMemberName" placeholder="Dein Name"></label>
+        <label class="field">PIN (optional, 4-stellig)<input type="text" id="newMemberPin" maxlength="4" placeholder="0000"></label>
+      </div>
+      <button class="btn" onclick="addTeamMember()">Hinzufügen &amp; einloggen</button>
+      <div id="loginError" class="login-error"></div>
+    </div>
+  </div>
+
+  <nav class="tabs">
+    <button class="active" data-tab="overview">📊 Übersicht</button>
+    <button data-tab="aufgaben">✓ Aufgaben</button>
+    <button data-tab="social">📱 Social Media</button>
+    <button data-tab="newsletter">✉️ Newsletter</button>
+    <button data-tab="support">💬 Support</button>
+    <button data-tab="documents">📁 Dokumente</button>
+  </nav>
+
+  <!-- OVERVIEW -->
+  <section class="panel active" id="panel-overview">
+    <div class="dash-grid" id="dash-stats"></div>
+    <div class="card">
+      <h2>Überfällig</h2>
+      <p class="hint">Aufgaben, Content oder Newsletter mit verpasstem Datum, noch nicht erledigt.</p>
+      <div id="dash-overdue"></div>
+    </div>
+    <div class="card">
+      <h2>Nächste 7 Tage</h2>
+      <div id="dash-upcoming"></div>
+    </div>
+    <div class="card">
+      <h2>Letzte Aktivität</h2>
+      <div id="dash-activity"></div>
+    </div>
+  </section>
+
+  <!-- AUFGABEN -->
+  <section class="panel" id="panel-aufgaben">
+    <div class="card">
+      <h2>Neue Aufgabe</h2>
+      <p class="hint">Wer macht was, bis wann, wie dringend.</p>
+      <div class="form-grid wide-first">
+        <label class="field">Aufgabe<input type="text" id="task-title" placeholder="z. B. INCI-Liste final prüfen"></label>
+        <label class="field">Verantwortlich<input type="text" id="task-owner" placeholder="Name"></label>
+        <label class="field">Kategorie
+          <select id="task-category"><option>Design & Website</option><option>Compliance & Legal</option><option>Marketing & Social</option><option>Logistik & Versand</option><option>Produkt & Sortiment</option><option>Sonstiges</option></select>
+        </label>
+        <label class="field">Priorität
+          <select id="task-priority"><option value="hoch">Hoch</option><option value="mittel" selected>Mittel</option><option value="niedrig">Niedrig</option></select>
+        </label>
+        <label class="field">Deadline<input type="date" id="task-deadline"></label>
+      </div>
+      <label class="field" style="margin-bottom:12px;">Link (optional)<input type="url" id="task-link" placeholder="https://..."></label>
+      <button class="btn" onclick="addItem('tasks')">Aufgabe hinzufügen</button>
+    </div>
+    <div class="card">
+      <h2>Alle Aufgaben</h2>
+      <div class="filter-bar">
+        <input type="text" id="tasks-search" placeholder="Suchen …" oninput="renderSection('tasks')">
+        <select id="tasks-filter-status" onchange="renderSection('tasks')"><option value="">Alle Status</option><option value="offen">Offen</option><option value="arbeit">In Arbeit</option><option value="fertig">Erledigt</option></select>
+        <select id="tasks-filter-category" onchange="renderSection('tasks')"><option value="">Alle Kategorien</option><option>Design & Website</option><option>Compliance & Legal</option><option>Marketing & Social</option><option>Logistik & Versand</option><option>Produkt & Sortiment</option><option>Sonstiges</option></select>
+        <div class="spacer"></div>
+        <span class="filter-count" id="tasks-count"></span>
+        <button class="btn ghost small" onclick="exportCSV('tasks')">CSV Export</button>
+      </div>
+      <table>
+        <thead><tr><th></th><th>Status</th><th>Aufgabe</th><th>Verantwortlich</th><th>Kategorie</th><th>Priorität</th><th>Deadline</th><th></th></tr></thead>
+        <tbody id="tasks-body"></tbody>
+      </table>
+      <div class="empty-state" id="tasks-empty" style="display:none;"><div class="big">Nichts gefunden</div>Andere Suche/Filter probieren oder neue Aufgabe anlegen.</div>
+      <button class="archive-toggle" id="tasks-archive-toggle" onclick="toggleArchive('tasks')"></button>
+    </div>
+  </section>
+
+  <!-- SOCIAL -->
+  <section class="panel" id="panel-social">
+    <div class="card">
+      <h2>Neuer Content-Eintrag</h2>
+      <p class="hint">Plant Posts, Stories und Reels im Voraus.</p>
+      <div class="form-grid">
+        <label class="field">Datum<input type="date" id="social-date"></label>
+        <label class="field">Plattform<select id="social-platform"><option>Instagram</option><option>TikTok</option><option>Beide</option></select></label>
+        <label class="field">Content-Typ<select id="social-type"><option>Post</option><option>Story</option><option>Reel</option><option>Live</option></select></label>
+        <label class="field">Verantwortlich<input type="text" id="social-owner" placeholder="Name"></label>
+      </div>
+      <label class="field" style="margin-bottom:8px;">Notiz / Caption-Idee<textarea id="social-note" placeholder="Kurzbeschreibung, Caption-Entwurf ..."></textarea></label>
+      <label class="field" style="margin-bottom:12px;">Link zu Assets (optional)<input type="url" id="social-link" placeholder="https://..."></label>
+      <button class="btn" onclick="addItem('social')">Eintrag hinzufügen</button>
+    </div>
+    <div class="card">
+      <h2>Content-Kalender</h2>
+      <div class="filter-bar">
+        <input type="text" id="social-search" placeholder="Suchen …" oninput="renderSection('social')">
+        <select id="social-filter-status" onchange="renderSection('social')"><option value="">Alle Status</option><option value="offen">Idee</option><option value="arbeit">In Produktion</option><option value="fertig">Freigegeben</option></select>
+        <select id="social-filter-platform" onchange="renderSection('social')"><option value="">Alle Plattformen</option><option>Instagram</option><option>TikTok</option><option>Beide</option></select>
+        <div class="spacer"></div>
+        <span class="filter-count" id="social-count"></span>
+        <div class="view-toggle"><button id="social-view-table" class="active" onclick="setView('social','table')">📋 Tabelle</button><button id="social-view-calendar" onclick="setView('social','calendar')">📅 Kalender</button></div>
+        <button class="btn ghost small" onclick="exportCSV('social')">CSV Export</button>
+      </div>
+      <table id="social-table-view">
+        <thead><tr><th></th><th>Datum</th><th>Plattform</th><th>Typ</th><th>Status</th><th>Verantwortlich</th><th>Notiz</th><th></th></tr></thead>
+        <tbody id="social-body"></tbody>
+      </table>
+      <div class="empty-state" id="social-empty" style="display:none;"><div class="big">Nichts gefunden</div>Andere Suche/Filter probieren oder neuen Eintrag anlegen.</div>
+      <button class="archive-toggle" id="social-archive-toggle" onclick="toggleArchive('social')"></button>
+      <div id="social-calendar-view" style="display:none;">
+        <div class="cal-header">
+          <button class="cal-nav-btn" onclick="changeMonth('social',-1)">‹</button>
+          <span class="cal-title" id="social-cal-title"></span>
+          <button class="cal-nav-btn" onclick="changeMonth('social',1)">›</button>
+        </div>
+        <div class="cal-grid" id="social-cal-grid"></div>
+        <div class="cal-detail-wrap" id="social-cal-detail"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Statistik</h2>
+      <div class="stats-grid" id="social-stats"></div>
+    </div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <section class="panel" id="panel-newsletter">
+    <div class="card">
+      <h2>Neue Kampagne</h2>
+      <p class="hint">Newsletter- und E-Mail-Marketing-Planung.</p>
+      <div class="form-grid">
+        <label class="field">Versanddatum<input type="date" id="news-date"></label>
+        <label class="field">Thema<input type="text" id="news-topic" placeholder="z. B. Winback-Aktion"></label>
+        <label class="field">Zielgruppe / Segment<input type="text" id="news-segment" placeholder="z. B. Inaktiv 60 Tage"></label>
+      </div>
+      <label class="field" style="margin-bottom:8px;">Notiz<textarea id="news-note" placeholder="Rabatthöhe, Betreffzeile, Performance-Notizen ..."></textarea></label>
+      <label class="field" style="margin-bottom:12px;">Link (optional)<input type="url" id="news-link" placeholder="https://..."></label>
+      <button class="btn" onclick="addItem('newsletter')">Kampagne hinzufügen</button>
+    </div>
+    <div class="card">
+      <h2>Newsletter-Kalender</h2>
+      <div class="filter-bar">
+        <input type="text" id="newsletter-search" placeholder="Suchen …" oninput="renderSection('newsletter')">
+        <select id="newsletter-filter-status" onchange="renderSection('newsletter')"><option value="">Alle Status</option><option value="offen">Entwurf</option><option value="arbeit">In Review</option><option value="fertig">Versendet</option></select>
+        <div class="spacer"></div>
+        <span class="filter-count" id="newsletter-count"></span>
+        <div class="view-toggle"><button id="newsletter-view-table" class="active" onclick="setView('newsletter','table')">📋 Tabelle</button><button id="newsletter-view-calendar" onclick="setView('newsletter','calendar')">📅 Kalender</button></div>
+        <button class="btn ghost small" onclick="exportCSV('newsletter')">CSV Export</button>
+      </div>
+      <table id="newsletter-table-view">
+        <thead><tr><th></th><th>Datum</th><th>Thema</th><th>Segment</th><th>Status</th><th>Notiz</th><th></th></tr></thead>
+        <tbody id="newsletter-body"></tbody>
+      </table>
+      <div class="empty-state" id="newsletter-empty" style="display:none;"><div class="big">Nichts gefunden</div>Andere Suche/Filter probieren oder neue Kampagne anlegen.</div>
+      <button class="archive-toggle" id="newsletter-archive-toggle" onclick="toggleArchive('newsletter')"></button>
+      <div id="newsletter-calendar-view" style="display:none;">
+        <div class="cal-header">
+          <button class="cal-nav-btn" onclick="changeMonth('newsletter',-1)">‹</button>
+          <span class="cal-title" id="newsletter-cal-title"></span>
+          <button class="cal-nav-btn" onclick="changeMonth('newsletter',1)">›</button>
+        </div>
+        <div class="cal-grid" id="newsletter-cal-grid"></div>
+        <div class="cal-detail-wrap" id="newsletter-cal-detail"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Statistik</h2>
+      <div class="stats-grid" id="newsletter-stats"></div>
+    </div>
+  </section>
+
+  <!-- SUPPORT -->
+  <section class="panel" id="panel-support">
+    <div class="card">
+      <h2>Neues Support-Anliegen</h2>
+      <p class="hint">Adressänderungen, Retouren, allgemeine Kundenanfragen — ohne sensible Zahlungsdaten hier eintragen.</p>
+      <div class="form-grid">
+        <label class="field">Kundenname<input type="text" id="sup-name" placeholder="z. B. Hamide K."></label>
+        <label class="field">Bestellnummer<input type="text" id="sup-order" placeholder="#1001"></label>
+        <label class="field">Anliegen<select id="sup-issue"><option>Adressänderung</option><option>Retoure</option><option>Lieferverzögerung</option><option>Allgemeine Frage</option><option>Sonstiges</option></select></label>
+        <label class="field">Zuständig<input type="text" id="sup-owner" placeholder="Name"></label>
+      </div>
+      <label class="field" style="margin-bottom:12px;">Notiz / Verlauf<textarea id="sup-note" placeholder="Was ist zu tun, letzter Stand ..."></textarea></label>
+      <button class="btn" onclick="addItem('support')">Ticket hinzufügen</button>
+    </div>
+    <div class="card">
+      <h2>Support-Tickets</h2>
+      <div class="filter-bar">
+        <input type="text" id="support-search" placeholder="Suchen …" oninput="renderSection('support')">
+        <select id="support-filter-status" onchange="renderSection('support')"><option value="">Alle Status</option><option value="offen">Offen</option><option value="arbeit">In Bearbeitung</option><option value="fertig">Erledigt</option></select>
+        <select id="support-filter-issue" onchange="renderSection('support')"><option value="">Alle Anliegen</option><option>Adressänderung</option><option>Retoure</option><option>Lieferverzögerung</option><option>Allgemeine Frage</option><option>Sonstiges</option></select>
+        <div class="spacer"></div>
+        <span class="filter-count" id="support-count"></span>
+        <button class="btn ghost small" onclick="exportCSV('support')">CSV Export</button>
+      </div>
+      <table>
+        <thead><tr><th></th><th>Status</th><th>Kunde</th><th>Bestellnr.</th><th>Anliegen</th><th>Zuständig</th><th>Notiz</th><th></th></tr></thead>
+        <tbody id="support-body"></tbody>
+      </table>
+      <div class="empty-state" id="support-empty" style="display:none;"><div class="big">Nichts gefunden</div>Andere Suche/Filter probieren oder neues Ticket anlegen.</div>
+      <button class="archive-toggle" id="support-archive-toggle" onclick="toggleArchive('support')"></button>
+    </div>
+  </section>
+
+  <!-- DOCUMENTS -->
+  <section class="panel" id="panel-documents">
+    <div class="card">
+      <h2>Dokument verlinken</h2>
+      <p class="hint">Echter Datei-Upload ist hier technisch nicht möglich — legt Dateien in Google Drive / OneDrive / SharePoint ab und verlinkt sie hier für den schnellen Team-Zugriff.</p>
+      <div class="form-grid wide-first">
+        <label class="field">Titel<input type="text" id="doc-title" placeholder="z. B. AGB final Aug 2026"></label>
+        <label class="field">Kategorie
+          <select id="doc-category"><option>Compliance & Legal</option><option>Verträge</option><option>Marke & Design</option><option>Marketing</option><option>Logistik</option><option>Sonstiges</option></select>
+        </label>
+        <label class="field">Link<input type="url" id="doc-link" placeholder="https://drive.google.com/..."></label>
+      </div>
+      <label class="field" style="margin-bottom:12px;">Notiz (optional)<textarea id="doc-note" placeholder="Kurzer Hinweis, worum es geht"></textarea></label>
+      <button class="btn" onclick="addDocument()">Dokument hinzufügen</button>
+    </div>
+
+    <div class="card">
+      <h2>Alle Dokumente</h2>
+      <div class="filter-bar">
+        <input type="text" id="documents-search" placeholder="Suchen …" oninput="renderDocuments()">
+        <select id="documents-filter-category" onchange="renderDocuments()">
+          <option value="">Alle Kategorien</option><option>Compliance & Legal</option><option>Verträge</option><option>Marke & Design</option><option>Marketing</option><option>Logistik</option><option>Sonstiges</option>
+        </select>
+        <div class="spacer"></div>
+        <span class="filter-count" id="documents-count"></span>
+      </div>
+      <table>
+        <thead><tr><th>Titel</th><th>Kategorie</th><th>Link</th><th>Notiz</th><th>Hinzugefügt</th><th></th></tr></thead>
+        <tbody id="documents-body"></tbody>
+      </table>
+      <div class="empty-state" id="documents-empty" style="display:none;"><div class="big">Noch keine Dokumente</div>Fügt oben den ersten Link hinzu.</div>
+    </div>
+  </section>
+
+</div>
+
+<script src="app_script.js"></script>
+</body>
+</html>
