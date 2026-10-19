@@ -1172,7 +1172,7 @@ function renderStage(){
   else if (!n){ btn.disabled = true; btn.textContent = 'Ziehung starten'; line.textContent = 'Das Gewinnspiel ist noch nicht vorbereitet.'; }
   else { btn.disabled = !!film || S.busy; btn.textContent = S.busy ? 'Einen Moment' : 'Ziehung starten'; line.innerHTML = 'Der Lostopf ist <b>bereit</b>.'; }
   const note = $('unsavedNote');
-  note.hidden = !(S.unsaved && S.draws.length);
+  note.hidden = !(S.unsaved && S.draws.length) || !!(film && !film.test);
   if (!note.hidden) note.textContent = 'Diese Ziehung ist nur auf diesem Gerät gespeichert, weil dieses Konto nicht ins Backend schreiben darf. Gewinner: ' + S.draws.map(d => d.order).join(', ') + '.';
 }
 
@@ -1216,8 +1216,11 @@ function renderBackend(){
     (list.length > shown.length ? '<tr><td colspan="4">und ' + nf.format(list.length - shown.length) + ' weitere Lose</td></tr>' : '');
 
   const has = S.draws.length > 0;
+  /* Waehrend der Film laeuft, den gerade gezogenen Gewinner noch nicht verraten */
+  const liveD = film && !film.test ? film.d : null;
   $('drawHint').hidden = has;
-  $('draws').innerHTML = S.draws.map((d, i) => {
+  $('draws').innerHTML = (liveD ? '<li class="draw"><span class="draw-role">Ziehung läuft</span><span class="draw-line">Der Gewinner erscheint hier, sobald der Film zu Ende ist.</span></li>' : '') +
+    S.draws.filter(d => !liveD || (d.id !== liveD.id && d !== liveD)).map((d, i) => {
     const o = S.orderMap.get(d.order);
     const contact = o ? esc(o.customer || 'Kein Name im Export') + (o.email ? ' · ' + esc(o.email) : '') : esc(d.name || '') + (d.name ? ' · ' : '') + 'Kontaktdaten stehen in Shopify unter dieser Bestellnummer';
     return '<li class="draw"><span class="draw-role">' + drawRole(d, i) + (S.demo ? ' · Beispiel' : '') + '</span><span class="draw-order">' + esc(d.order) + '</span>' +
