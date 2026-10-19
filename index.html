@@ -623,6 +623,7 @@ tr+tr td{border-top:1px solid var(--line)}
     <div class="regie-row">
       <button class="btn btn-dark" id="rgTest" type="button" hidden>Generalprobe starten</button>
       <button class="btn btn-line" id="rgHome" type="button" hidden>Zurück zur Startansicht</button>
+      <button class="btn btn-line" id="rgReset" type="button" hidden>Ziehung zurücksetzen</button>
       <button class="btn btn-line btn-small" id="fsBtn" type="button">Vollbild</button>
       <button class="btn btn-line btn-small" id="soundBtn" type="button" aria-pressed="true">Ton an</button>
       <span class="seg-wrap"><span class="ctl-label">Format</span>
@@ -1136,6 +1137,9 @@ function renderRegie(){
   $('rgTest').disabled = busy || !n;
   $('rgTest').textContent = film && film.test ? 'Generalprobe läuft' : 'Generalprobe starten';
   $('rgHome').hidden = !S.testShown || busy;
+  $('rgReset').hidden = !S.draws.length || busy;
+  $('rgReset').textContent = S.rgResetArmed ? 'Wirklich zurücksetzen? Nochmal klicken' : 'Ziehung zurücksetzen';
+  $('rgReset').classList.toggle('btn-dark', !!S.rgResetArmed); $('rgReset').classList.toggle('btn-line', !S.rgResetArmed);
   $('rgAdmin').textContent = S.showAdmin ? 'Verwaltung ausblenden' : 'Verwaltung anzeigen';
   $('rgAdmin').setAttribute('aria-expanded', String(S.showAdmin));
   const st = [];
@@ -2408,13 +2412,24 @@ $('testBtn').addEventListener('click', startTest);
 $('replayBtn').addEventListener('click', () => { if (film || !S.draws.length) return; AU.init(); const d = S.draws[S.draws.length - 1]; startFilm(d, { short: d.kind === 'ersatz' }); });
 $('ersatzBtn').addEventListener('click', () => startDraw('ersatz'));
 $('homeBtn').addEventListener('click', () => { if (film) return; S.testShown = false; syncView(); renderAll(); });
+async function resetDraws(){
+  S.resetArmed = false; S.rgResetArmed = false; S.busy = true;
+  if (S.mode === 'db'){ for (const d of S.drawDocs){ try { await S.db.doc('draws/' + d.id).delete(); } catch (e){} } try { localStorage.removeItem('ngs.draws.' + (S.cfg && S.cfg.rev)); } catch (e){} }
+  S.extraDraws = []; S.drawDocs = []; S.busy = false; S.testShown = false;
+  afterData();
+}
 $('resetBtn').addEventListener('click', async () => {
   if (film || S.busy) return;
   if (!S.resetArmed){ S.resetArmed = true; renderBackend(); return; }
-  S.resetArmed = false; S.busy = true;
-  if (S.mode === 'db'){ for (const d of S.drawDocs){ try { await S.db.doc('draws/' + d.id).delete(); } catch (e){} } try { localStorage.removeItem('ngs.draws.' + (S.cfg && S.cfg.rev)); } catch (e){} }
-  S.extraDraws = []; S.drawDocs = []; S.busy = false;
-  afterData();
+  await resetDraws();
+});
+/* Regie: Ziehung zuruecksetzen, zweiter Klick innerhalb von 5 Sekunden bestaetigt */
+let rgResetTimer = 0;
+$('rgReset').addEventListener('click', async () => {
+  if (film || S.busy || !S.draws.length) return;
+  clearTimeout(rgResetTimer);
+  if (!S.rgResetArmed){ S.rgResetArmed = true; renderRegie(); rgResetTimer = setTimeout(() => { S.rgResetArmed = false; renderRegie(); }, 5000); return; }
+  await resetDraws();
 });
 $('saveBtn').addEventListener('click', saveBackend);
 ['dateFrom', 'dateTo', 'exCancelled', 'exRefunded', 'exUnpaid', 'exManual'].forEach(id => $(id).addEventListener('change', () => { if (!film && S.orders.length) recompute(); }));
