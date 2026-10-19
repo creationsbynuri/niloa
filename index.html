@@ -423,6 +423,8 @@ body{
 /* ---------- Regie unter der Buehne ---------- */
 .regie{display:flex;flex-direction:column;gap:14px;padding:18px 20px;border:1px solid var(--line);border-radius:var(--radius);background:var(--field)}
 .regie-status{display:flex;flex-wrap:wrap;gap:8px 22px;font-size:15px;font-variant-numeric:tabular-nums}
+.cnt-btn{font:inherit;font-size:13px;margin-left:6px;padding:2px 9px;border-radius:999px;border:1px solid currentColor;background:transparent;color:inherit;opacity:.75;cursor:pointer}
+.cnt-btn:hover{opacity:1}
 .st{display:inline-flex;align-items:center;gap:8px}
 .st::before{content:"";flex:none;width:9px;height:9px;border-radius:50%;background:var(--muted)}
 .st.ok::before{background:var(--ok)}
@@ -1137,7 +1139,7 @@ function renderRegie(){
   $('rgAdmin').textContent = S.showAdmin ? 'Verwaltung ausblenden' : 'Verwaltung anzeigen';
   $('rgAdmin').setAttribute('aria-expanded', String(S.showAdmin));
   const st = [];
-  st.push(!S.loaded ? ['wait', 'Lose werden geladen'] : n ? ['ok', 'Lostopf bereit'] : ['warn', 'Noch keine Lose gespeichert']);
+  st.push(!S.loaded ? ['wait', 'Lose werden geladen'] : n ? ['ok', S.showCount ? 'Lostopf bereit: ' + nf.format(n) + ' Lose' : 'Lostopf bereit'] : ['warn', 'Noch keine Lose gespeichert']);
   if (S.fm){
     const vs = FILM_ROLES.map(r => VID[r]), ready = vs.filter(v => v.readyState >= 2).length;
     st.push(vs.some(v => v.error) ? ['warn', 'Ein Film lässt sich nicht abspielen'] : ready === vs.length ? ['ok', 'Filme geladen'] : ['wait', 'Filme laden (' + ready + ' von ' + vs.length + ')']);
@@ -1146,8 +1148,17 @@ function renderRegie(){
   st.push(real ? ['done', 'Gezogen: ' + real.order + ' am ' + fmtStamp(real.at)] : ['ok', 'Bereit für die Ziehung']);
   st.push(AU.on ? ['ok', 'Ton an'] : ['warn', 'Ton aus']);
   if (S.unsaved) st.push(['warn', 'Ziehung nur auf diesem Gerät gespeichert']);
-  $('regieStatus').innerHTML = st.map(([c, t]) => '<span class="st ' + c + '">' + esc(t) + '</span>').join('');
+  $('regieStatus').innerHTML = st.map(([c, t], i) => '<span class="st ' + c + '">' + esc(t) +
+    (i === 0 && n ? ' <button type="button" class="cnt-btn" id="rgCount">' + (S.showCount ? 'ausblenden' : 'Anzahl zeigen') + '</button>' : '') + '</span>').join('');
 }
+/* Lose-Anzahl nur auf Klick und nur kurz, damit sie nicht versehentlich im Live zu sehen ist */
+let countTimer = 0;
+document.addEventListener('click', (e) => {
+  if (!e.target || e.target.id !== 'rgCount') return;
+  S.showCount = !S.showCount; clearTimeout(countTimer);
+  if (S.showCount) countTimer = setTimeout(() => { S.showCount = false; renderRegie(); }, 10000);
+  renderRegie();
+});
 
 function renderStage(){
   const n = S.tickets.length, btn = $('drawBtn'), line = $('countLine');
