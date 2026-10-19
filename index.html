@@ -1149,7 +1149,7 @@ function renderRegie(){
     st.push(vs.some(v => v.error) ? ['warn', 'Ein Film lässt sich nicht abspielen'] : ready === vs.length ? ['ok', 'Filme geladen'] : ['wait', 'Filme laden (' + ready + ' von ' + vs.length + ')']);
   } else st.push(['', 'Ohne Film, einfache Fassung']);
   const real = S.draws.find(d => d.kind === 'winner') || S.draws[0];
-  st.push(real ? ['done', 'Gezogen: ' + real.order + ' am ' + fmtStamp(real.at)] : ['ok', 'Bereit für die Ziehung']);
+  st.push(film && !film.test ? ['wait', 'Ziehung läuft …'] : real ? ['done', 'Gezogen: ' + real.order + ' am ' + fmtStamp(real.at)] : ['ok', 'Bereit für die Ziehung']);
   st.push(AU.on ? ['ok', 'Ton an'] : ['warn', 'Ton aus']);
   if (S.unsaved) st.push(['warn', 'Ziehung nur auf diesem Gerät gespeichert']);
   $('regieStatus').innerHTML = st.map(([c, t], i) => '<span class="st ' + c + '">' + esc(t) +
