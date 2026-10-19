@@ -71,7 +71,12 @@
     try { over = JSON.parse(e.newValue || '{}') || {}; } catch (err){ over = {}; }
     Object.keys(Object.assign({}, base, over)).forEach(notify);
   });
-  const user = { canEdit: async () => /admin/.test(location.hash) };
+  /* Wer den Zugangscode hat, bekommt die Regie-Leiste (Generalprobe, Vollbild, Ton).
+     Das Backend zum Lose-Hochladen bleibt hier aus: die Lose kommen fest aus data.enc. */
+  const user = { canEdit: async () => true };
+  const hideBackend = document.createElement('style');
+  hideBackend.textContent = '#rgAdmin,#backend{display:none!important}';
+  (document.head || document.documentElement).appendChild(hideBackend);
 
   let ready; const unlocked = new Promise(r => { ready = r; });
   window.claude = { use: async (n) => { await unlocked; return n === 'db' ? db : n === 'user' ? user : null; } };
@@ -1132,7 +1137,7 @@ function renderRegie(){
   $('rgAdmin').textContent = S.showAdmin ? 'Verwaltung ausblenden' : 'Verwaltung anzeigen';
   $('rgAdmin').setAttribute('aria-expanded', String(S.showAdmin));
   const st = [];
-  st.push(!S.loaded ? ['wait', 'Lose werden geladen'] : n ? ['ok', nf.format(n) + ' Lose bereit'] : ['warn', 'Noch keine Lose gespeichert']);
+  st.push(!S.loaded ? ['wait', 'Lose werden geladen'] : n ? ['ok', 'Lostopf bereit'] : ['warn', 'Noch keine Lose gespeichert']);
   if (S.fm){
     const vs = FILM_ROLES.map(r => VID[r]), ready = vs.filter(v => v.readyState >= 2).length;
     st.push(vs.some(v => v.error) ? ['warn', 'Ein Film lässt sich nicht abspielen'] : ready === vs.length ? ['ok', 'Filme geladen'] : ['wait', 'Filme laden (' + ready + ' von ' + vs.length + ')']);
@@ -1150,7 +1155,7 @@ function renderStage(){
   $('testBadge').hidden = !((film && film.test) || S.testShown);
   if (!S.loaded){ btn.disabled = true; btn.textContent = 'Einen Moment'; line.textContent = 'Lose werden geladen'; }
   else if (!n){ btn.disabled = true; btn.textContent = 'Ziehung starten'; line.textContent = 'Das Gewinnspiel ist noch nicht vorbereitet.'; }
-  else { btn.disabled = !!film || S.busy; btn.textContent = S.busy ? 'Einen Moment' : 'Ziehung starten'; line.innerHTML = '<b>' + nf.format(n) + '</b> ' + (n === 1 ? 'Los' : 'Lose') + ' im Topf'; }
+  else { btn.disabled = !!film || S.busy; btn.textContent = S.busy ? 'Einen Moment' : 'Ziehung starten'; line.innerHTML = 'Der Lostopf ist <b>bereit</b>.'; }
   const note = $('unsavedNote');
   note.hidden = !(S.unsaved && S.draws.length);
   if (!note.hidden) note.textContent = 'Diese Ziehung ist nur auf diesem Gerät gespeichert, weil dieses Konto nicht ins Backend schreiben darf. Gewinner: ' + S.draws.map(d => d.order).join(', ') + '.';
@@ -1848,7 +1853,7 @@ function fillWin(d, test){
   $('winOrder').textContent = d.order;
   const nm = S.showMode === 'name' ? (d.name || '') : '';
   $('winName').textContent = nm; $('winName').hidden = !nm;
-  $('winMeta').textContent = 'Los ' + nf.format(d.no) + ' von ' + nf.format(S.tickets.length || d.pool) + ' · iPhone 17 Pro';
+  $('winMeta').textContent = 'iPhone 17 Pro';
 }
 function syncView(){
   if (film) return;
@@ -1957,9 +1962,9 @@ function buildCues(f){
     at(1.9, () => { M.vigT = 1; card('', 'ein ' + month + '.'); });
     /* 2 · Die Zahl schlaegt ein. */
     at(4.6, (ft) => {
-      const c = { num: N, label: N === 1 ? 'bestellung.' : 'bestellungen.' };
-      swap('Stat', () => { const big = $('statBig'); big.classList.remove('long'); big.textContent = '0'; restart(big, 'slam'); $('statLabel').textContent = c.label; kinify($('statLabel')); $('statDots').innerHTML = ''; });
-      f.stat = { num: N, suf: '', t0: ft + .15, dur: 1.0, shown: -1 };
+      const c = { big: 'ein los.', label: 'für jede bestellung.' };
+      swap('Stat', () => { const big = $('statBig'); big.classList.remove('long'); big.textContent = c.big; restart(big, 'slam'); $('statLabel').textContent = c.label; kinify($('statLabel')); $('statDots').innerHTML = ''; });
+      f.stat = null;
       AU.braam(); cam.shake = 16; M.bokT = .6; M.dT = .12;
     });
     /* 3 · Silhouette: die Kamera gleitet am Flakon hinab, nur Gegenlicht. */
@@ -2015,7 +2020,7 @@ function buildCues(f){
   /* 2 · Glueckwunsch, die Kamera faehrt auf den Flakon. */
   at(t + 8.4, () => { card('bestellung ' + d.order, 'glück&shy;wunsch.'); camTo('bottle', 1.22, .35, false, frameEl.classList.contains('land') ? .16 : 0, frameEl.classList.contains('land') ? 0 : -.1); B.raysT = .6; AU.hit(); });
   /* 3 · Rueckblick und Dank. */
-  at(t + 12.8, () => { card('danke für euren ' + month, nf.format(N) + ' lose.<br>ein <em>glow.</em>'); camTo('center', 1.02, .4); });
+  at(t + 12.8, () => { card('danke für euren ' + month, 'jede bestellung.<br>ein <em>glow.</em>'); camTo('center', 1.02, .4); });
   /* 4 · Die Kappe schliesst, Logo, Abblende. */
   at(t + 17.4, () => {
     $('titleSmall').textContent = 'wo dein glow beginnt.'; kinify($('titleSmall'));
@@ -2046,7 +2051,7 @@ function drawCues(at, t, f){
   if (N > 160){ rounds.push({ from: N, to: 100, dur: 12 }); cur = 100; }
   if (cur > F) rounds.push({ from: cur, to: F, dur: cur > 30 ? 10 : 7 });
   rounds.forEach((r, i) => {
-    at(t, (ft) => { scene('Count'); $('runTicket').textContent = nf.format(r.from); f.label = ''; f.round = { t0: ft, t1: ft + r.dur, from: r.from, to: r.to, next: 0 }; M.omT = 1.75; AU.drone(.2 + i * .04); AU.riser(r.dur / f.speed); });
+    at(t, (ft) => { scene('Count'); $('runTicket').textContent = ''; f.label = ''; f.round = { t0: ft, t1: ft + r.dur, from: r.from, to: r.to, next: 0 }; M.omT = 1.75; AU.drone(.2 + i * .04); AU.riser(r.dur / f.speed); });
     t += r.dur;
     at(t, () => { f.round = null; M.omT = .45; M.boost = 0; });
     if (i < rounds.length - 1){ at(t, () => { card('zwischenstand', 'noch <em>' + nf.format(r.to) + '</em> lose.', true); AU.hit(); cam.shake = 8; }); t += 3.6; }
@@ -2098,7 +2103,7 @@ function buildCuesFilm(f){
     at(3.7, () => { scene(null); M.vigT = 0; });
     /* 2 · Blende in den Sonnenaufgang: die Zahl fliegt ins Bild. */
     at(4.5, (ft) => {
-      showStatFM({ id: 'orders', num: N, label: (N === 1 ? 'bestellung' : 'bestellungen') + ' im ' + month }, 0, 0, ft);
+      showStatFM({ id: 'promise', big: 'ein los', label: 'für jede bestellung im ' + month }, 0, 0, ft);
       AU.braam(); cam.shake = 14; flash = .3; M.warp = 1.2; M.vigT = .9;
     });
     at(7.7, () => { flyOut(); AU.whoosh(.7); M.warp = 1.1; });
@@ -2144,7 +2149,7 @@ function buildCuesFilm(f){
   at(t + 8.4, () => { scene(null); AU.whoosh(.9); });
   /* 3 · Weissblende, Rueckflug ueber die Kueste. */
   at(t + 8.95, () => { flash = .55; pan(.66); M.warp = 1; });
-  at(t + 9.6, () => { zone('full'); card('danke für euren ' + month, nf.format(N) + ' lose.<br>ein <em>glow.</em>'); M.warpT = .25; });
+  at(t + 9.6, () => { zone('full'); card('danke für euren ' + month, 'jede bestellung.<br>ein <em>glow.</em>'); M.warpT = .25; });
   at(t + 12.9, () => { scene(null); });
   /* 4 · Sonne ueber dem Meer: das Logo zeichnet sich. */
   at(t + 13.5, () => { pan(.69); $('titleSmall').textContent = 'wo dein glow beginnt.'; kinify($('titleSmall')); scene('Title'); FL.key = 'text'; FL.aT = .4; AU.hit(); M.warpT = .1; M.dT = .3; });
@@ -2349,7 +2354,7 @@ function updateFilm(now, ft){
     const r = f.round, u = clamp01((ft - r.t0) / (r.t1 - r.t0));
     const K = Math.max(r.to, Math.round(Math.exp(Math.log(r.from) + (Math.log(r.to) - Math.log(r.from)) * u)));
     M.Kp = Math.max(Math.min(r.to, 3), Math.round(K / f.N * P.length)); M.scT = 1 - .28 * u; M.boost = Math.pow(1 - K / f.N, 3);
-    const label = 'noch ' + nf.format(K) + ' lose';
+    const label = K > 100 ? 'die lose werden gemischt' : 'noch ' + nf.format(K) + ' lose';
     if (label !== f.label){ f.label = label; $('runLabel').textContent = label; }
     if (now >= r.next){
       const t = S.tickets[f.order[(Math.random() * Math.min(K, f.order.length)) | 0]];
